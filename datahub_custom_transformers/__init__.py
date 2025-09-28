@@ -4,9 +4,8 @@ DataHub Custom Transformers
 A collection of custom DataHub transformers for various metadata enhancement tasks.
 """
 
-__version__ = "1.0.0"
-__author__ = "Your Organization"
-__email__ = "data-engineering@yourorg.com"
+__version__ = "0.1.0"
+__author__ = "Abdullah Tariq"
 
 # Import all available transformers
 from .domain_structured_properties import (
