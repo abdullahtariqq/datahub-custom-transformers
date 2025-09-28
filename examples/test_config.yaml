@@ -1,0 +1,15 @@
+# Test configuration with sample data
+source:
+  type: file
+  config:
+    filename: "./test_data.json"
+
+transformers:
+  - type: "simple_add_dataset_domain_structured_properties"
+    config:
+      properties:
+        environment: "test_environment"
+        team: "test_team"
+
+sink:
+  type: console

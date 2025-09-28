@@ -1,0 +1,19 @@
+# Multiple properties example
+source:
+  type: bigquery
+  config:
+    project_id: "analytics-project"
+
+transformers:
+  - type: "simple_add_dataset_domain_structured_properties"
+    config:
+      properties:
+        environment: "gcp_production_environment"
+        team: "data_engineering_team"
+        department: "engineering_department"
+        environment: "production_env"
+
+sink:
+  type: datahub-rest
+  config:
+    server: "http://localhost:8080"

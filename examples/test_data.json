@@ -1,0 +1,47 @@
+[
+  {
+    "entityType": "dataset",
+    "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:bigquery,project.analytics.user_events,PROD)",
+    "aspectName": "datasetProperties",
+    "aspect": {
+      "customProperties": {},
+      "description": "User analytics events dataset for tracking user behavior"
+    }
+  },
+  {
+    "entityType": "dataset",
+    "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:postgres,db.marketing.campaigns,PROD)",
+    "aspectName": "datasetProperties",
+    "aspect": {
+      "customProperties": {},
+      "description": "Marketing campaign data for campaign management"
+    }
+  },
+  {
+    "entityType": "dataset",
+    "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,warehouse.finance.billing_data,PROD)",
+    "aspectName": "datasetProperties",
+    "aspect": {
+      "customProperties": {},
+      "description": "Financial billing data for revenue tracking"
+    }
+  },
+  {
+    "entityType": "dataset",
+    "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:bigquery,ml_project.models.customer_segmentation,PROD)",
+    "aspectName": "datasetProperties",
+    "aspect": {
+      "customProperties": {},
+      "description": "ML model data for customer segmentation"
+    }
+  },
+  {
+    "entityType": "dataset",
+    "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:mysql,app_db.user_data.profiles,PROD)",
+    "aspectName": "datasetProperties",
+    "aspect": {
+      "customProperties": {},
+      "description": "User profile data from application database"
+    }
+  }
+]

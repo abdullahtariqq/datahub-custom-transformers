@@ -1,0 +1,20 @@
+# Basic usage example
+source:
+  type: postgres
+  config:
+    host_port: "localhost:5432"
+    database: "analytics_db"
+    username: "user"
+    password: "password"
+
+transformers:
+  - type: "simple_add_dataset_domain_structured_properties"
+    config:
+      properties:
+        environment: "production_environment"
+        team: "data_engineering_team"
+
+sink:
+  type: datahub-rest
+  config:
+    server: "http://localhost:8080"

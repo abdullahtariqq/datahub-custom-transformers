@@ -1,0 +1,80 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "datahub-custom-transformers"
+dynamic = ["version"]
+description = "Collection of custom DataHub transformers for metadata enhancement"
+readme = "README_PYPI.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "Abdullah Tariq" }]
+keywords = [
+    "datahub",
+    "transformers",
+    "metadata",
+    "data-governance",
+    "data-catalog",
+    "custom-transformers"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Database",
+]
+dependencies = [
+    "acryl-datahub>=0.12.0",
+    "pydantic>=1.8.0",
+]
+
+
+[project.urls]
+Homepage = "https://github.com/your-org/datahub-custom-transformers"
+Documentation = "https://github.com/your-org/datahub-custom-transformers#readme"
+Repository = "https://github.com/your-org/datahub-custom-transformers.git"
+Issues = "https://github.com/your-org/datahub-custom-transformers/issues"
+
+[project.entry-points."datahub.ingestion.transformer.plugins"]
+simple_add_dataset_domain_structured_properties = "datahub_custom_transformers.domain_structured_properties.transformer:SimpleAddDatasetDomainStructuredPropertiesTransformer"
+
+[tool.hatch.version]
+path = "datahub_custom_transformers/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/datahub_custom_transformers",
+    "/tests",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.13.2",
+]
