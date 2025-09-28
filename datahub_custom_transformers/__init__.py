@@ -4,7 +4,7 @@ DataHub Custom Transformers
 A collection of custom DataHub transformers for various metadata enhancement tasks.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Abdullah Tariq"
 
 # Import all available transformers
