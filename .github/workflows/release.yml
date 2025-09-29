@@ -1,0 +1,164 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: "Dry run (don't create release or publish)"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+
+    - name: Set up Python
+      run: uv python install 3.11
+
+    - name: Install dependencies
+      run: uv sync --dev
+
+    - name: Get current version
+      id: current_version
+      run: |
+        CURRENT_VERSION=$(grep '__version__' datahub_custom_transformers/__init__.py | cut -d'"' -f2)
+        echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+        echo "Current version: $CURRENT_VERSION"
+
+    - name: Calculate new version
+      id: new_version
+      uses: actions-ecosystem/action-bump-semver@v1
+      with:
+        current_version: ${{ steps.current_version.outputs.current }}
+        level: ${{ github.event.inputs.version_type }}
+
+    - name: Update version in code
+      run: |
+        sed -i 's/__version__ = ".*"/__version__ = "${{ steps.new_version.outputs.new_version }}"/' datahub_custom_transformers/__init__.py
+        echo "Updated version to ${{ steps.new_version.outputs.new_version }}"
+
+    - name: Run tests
+      run: |
+        uv run ruff check .
+        uv run mypy datahub_custom_transformers
+        uv run pytest tests/ -v
+
+    - name: Build package
+      run: uv build
+
+    - name: Verify package
+      run: |
+        uv tool run twine check dist/*
+        # Test install the built package
+        pip install dist/*.whl
+        python -c "from datahub_custom_transformers import __version__; print(f'Installed version: {__version__}')"
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Generate changelog from commits since last tag
+        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+        if [ -n "$LAST_TAG" ]; then
+          CHANGELOG=$(git log $LAST_TAG..HEAD --pretty=format:"- %s" --no-merges)
+        else
+          CHANGELOG=$(git log --pretty=format:"- %s" --no-merges -10)
+        fi
+
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+        echo "## Changes in ${{ steps.new_version.outputs.new_version }}" >> $GITHUB_OUTPUT
+        echo "" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Commit version bump
+      if: github.event.inputs.dry_run != 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add datahub_custom_transformers/__init__.py
+        git commit -m "chore: bump version to ${{ steps.new_version.outputs.new_version }}"
+        git tag -a v${{ steps.new_version.outputs.new_version }} -m "Release ${{ steps.new_version.outputs.new_version }}"
+        git push origin main
+        git push origin v${{ steps.new_version.outputs.new_version }}
+
+    - name: Create GitHub Release
+      if: github.event.inputs.dry_run != 'true'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v${{ steps.new_version.outputs.new_version }}
+        name: Release ${{ steps.new_version.outputs.new_version }}
+        body: |
+          ${{ steps.changelog.outputs.changelog }}
+
+          ## Installation
+
+          ```bash
+          uv add datahub-custom-transformers==${{ steps.new_version.outputs.new_version }}
+          ```
+
+          ## PyPI
+          📦 [datahub-custom-transformers ${{ steps.new_version.outputs.new_version }}](https://pypi.org/project/datahub-custom-transformers/${{ steps.new_version.outputs.new_version }}/)
+        draft: false
+        prerelease: ${{ github.event.inputs.prerelease == 'true' }}
+        files: |
+          dist/*
+
+    - name: Publish to PyPI
+      if: github.event.inputs.dry_run != 'true'
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        uv tool run twine upload dist/*
+
+    - name: Verify PyPI upload
+      if: github.event.inputs.dry_run != 'true'
+      run: |
+        sleep 30  # Wait for PyPI to process
+        pip install datahub-custom-transformers==${{ steps.new_version.outputs.new_version }}
+        python -c "from datahub_custom_transformers import __version__; print(f'✅ PyPI version: {__version__}')"
+
+    - name: Dry run summary
+      if: github.event.inputs.dry_run == 'true'
+      run: |
+        echo "🔍 DRY RUN COMPLETED"
+        echo "Current version: ${{ steps.current_version.outputs.current }}"
+        echo "New version: ${{ steps.new_version.outputs.new_version }}"
+        echo "Tag: v${{ steps.new_version.outputs.new_version }}"
+        echo "Version type: ${{ github.event.inputs.version_type }}"
+        echo "Pre-release: ${{ github.event.inputs.prerelease }}"
+        echo ""
+        echo "✅ Tests passed"
+        echo "✅ Package built successfully"
+        echo "✅ Ready for release!"

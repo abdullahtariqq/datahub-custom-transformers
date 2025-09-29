@@ -10,7 +10,6 @@ A collection of custom DataHub transformers for various metadata enhancement tas
 
 - 🏗️ **Modular Design**: Easy to add new transformers
 - 🔧 **Production Ready**: Tested and documented transformers
-- 📦 **Easy Installation**: Simple pip install
 - 🔌 **Auto-Discovery**: Transformers are automatically registered with DataHub
 
 ## Installation
